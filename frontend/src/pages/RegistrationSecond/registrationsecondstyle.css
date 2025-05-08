@@ -1,0 +1,152 @@
+/* Глобальный сброс */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+.registrationsecond {
+    background-color: #ff5151;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+}
+  
+.registrationsecond .div {
+    background-color: #ff5151;
+    height: 874px;
+    position: relative;
+    overflow: hidden;
+    width: 402px;
+}
+  
+.registrationsecond .overlap {
+    background-color: #fefaff;
+    border-radius: 54px;
+    height: 597px;
+    left: 0;
+    position: absolute;
+    top: 277px;
+    width: 402px;
+}
+  
+.registrationsecond .div-wrapper {
+    background-color: #280636;
+    border-radius: 28px;
+    height: 49px;
+    position: relative;
+    width: 342px;
+}
+
+/* Стили для блока подтверждения регистрации */
+.registrationsecond .confirmation-text {
+    /* Центрирование содержимого и отступы для комфортного чтения */
+    text-align: center;
+    padding: 30px 20px;
+  }
+  
+  /* Заголовок подтверждения */
+  .registrationsecond .confirmation-text h2 {
+    font-family: "Rubik-Medium", Helvetica, sans-serif;
+    font-size: 28px;
+    color: #280635;
+    margin-bottom: 20px;
+  }
+  
+  /* Текст подтверждения */
+  .registrationsecond .confirmation-text p {
+    font-family: "Rubik-Regular", Helvetica, sans-serif;
+    font-size: 16px;
+    color: #280635;
+    line-height: 1.5;
+    margin: 0;
+  }
+  
+/* Кнопка регистрации */
+.registrationsecond .button-registration {
+    height: 49px;
+    left: 30px;
+    position: absolute;
+    top: 380px;
+    width: 344px;
+  }
+  
+  .registrationsecond .overlap-3 {
+    background-color: #280636;
+    border-radius: 28px;
+    height: 49px;
+    position: relative;
+    width: 342px;
+  }
+  
+  .registrationsecond .text-wrapper-2 {
+    color: #ffffff;
+    font-family: "Rubik-Medium", Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    position: absolute;
+    text-align: center;
+    left: 26px;
+    top: 15px;
+    left: 44%;
+  }
+  
+.registrationsecond .text-wrapper-5 {
+    color: #ffffff;
+    font-family: "Rubik-Medium", Helvetica;
+    font-size: 48px;
+    font-weight: 500;
+    left: 29px;
+    letter-spacing: 0;
+    line-height: normal;
+    position: absolute;
+    top: 186px;
+    white-space: nowrap;
+ }
+  
+.registrationsecond .text-wrapper-6 {
+    color: #fefaff;
+    font-family: "Rubik-Medium", Helvetica;
+    font-size: 16px;
+    font-weight: 500;
+    left: 288px;
+    letter-spacing: 0;
+    line-height: normal;
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+}
+
+.registrationsecond .view-2 {
+    height: 98px;
+    left: 150px;
+    position: absolute;
+    top: 85px;
+    width: 160px;
+}
+  
+.registrationsecond .overlap-4 {
+    height: 98px;
+    position: relative;
+}
+  
+.registrationsecond .left-eye {
+    height: 91px;
+    left: 0px;
+    position: absolute;
+    top: 0px;
+    width: 91px;
+}
+  
+.registrationsecond .right-eye {
+    height: 83px;
+    left: 80px;
+    position: absolute;
+    top: 15px;
+    width: 83px;
+}
+  

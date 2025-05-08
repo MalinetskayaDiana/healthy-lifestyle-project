@@ -159,12 +159,6 @@ public class UserService implements UserDetailsService {
                 isUpdated = true;
             }
 
-            // Обновление состояния включения
-            if (updatedUser.getEnabled() != null && !updatedUser.getEnabled().equals(user.getEnabled())) {
-                user.setEnabled(updatedUser.getEnabled());
-                isUpdated = true;
-            }
-
             // Обновление нормы калорий
             if (updatedUser.getBirthDate() != null
                     && updatedUser.getHeight() != null
@@ -181,6 +175,11 @@ public class UserService implements UserDetailsService {
                 isUpdated = true;
             }
 
+            if (updatedUser.getProfileCompleted() != null) {
+                user.setProfileCompleted(updatedUser.getProfileCompleted());
+                isUpdated = true;
+            }
+
             // Сохраняем пользователя, если были изменения
             if (isUpdated) {
                 return userRepository.save(user);
@@ -189,7 +188,6 @@ public class UserService implements UserDetailsService {
             }
         }).orElseThrow(() -> new RuntimeException("The user was not found with the id " + id));
     }
-
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

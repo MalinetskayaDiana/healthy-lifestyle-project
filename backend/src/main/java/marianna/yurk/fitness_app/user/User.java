@@ -35,10 +35,8 @@ public class User implements UserDetails {
         )
         private Long id;
 
-        @NotEmpty(message = "Имя пользователя обязательно")
         private String firstName;
 
-        @NotEmpty(message = "Фамилия пользователя обязательно")
         private String lastName;
 
         @NotEmpty(message = "Электронная почта обязательна")
@@ -70,6 +68,8 @@ public class User implements UserDetails {
         private AuthProvider provider;
 
         private String imageUrl;
+
+        private Boolean profileCompleted = false;
 
         public User(String firstName,
                     String lastName,
