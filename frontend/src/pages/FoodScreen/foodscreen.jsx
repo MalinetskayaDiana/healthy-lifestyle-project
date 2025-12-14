@@ -12,14 +12,14 @@ import { useNavigate } from "react-router-dom";
 
 export const FoodScreen = () => {
     const navigate = useNavigate();
-    const [records, setRecords] = useState([ ]);
+    const [records, setRecords] = useState([]);
+    const [editingFood, setEditingFood] = useState(null);
     const [showAddMenu, setShowAddMenu] = useState(false);
     const [totalCalories, setTotalCalories] = useState(0);
     const userId = localStorage.getItem("userId");
 
     const loadFoodData = async () => {
         try {
-
             const reportResponse = await fetch(`/report/today?userId=${userId}`);
 
             if (!reportResponse.ok) {
@@ -41,16 +41,34 @@ export const FoodScreen = () => {
             const formattedData = data.flatMap(tracker =>
                 tracker.entries.map(entry => ({
                     id: entry.id,
+                    trackerId: tracker.id,
                     label: entry.foodName,
                     volume: `${entry.calories} ккал`,
-                    grams: `${entry.proteins} г белков`
+                    grams: `${entry.proteins} г белков`,
+                    foodName: entry.foodName,
+                    calories: entry.calories,
+                    proteins: entry.proteins,
+                    fats: entry.fats,
+                    carbs: entry.carbs,
+                    fiber: entry.fiber,
+                    sugar: entry.sugar,
+                    time: entry.time,
+                    date: tracker.date,
+                    rawName: entry.foodName,
+                    rawCalories: entry.calories,
+                    rawProteins: entry.proteins,
+                    rawFats: entry.fats,
+                    rawCarbs: entry.carbs,
+                    rawFiber: entry.fiber,
+                    rawSugar: entry.sugar,
+                    rawTime: entry.time,
+                    rawDate: tracker.date
                 }))
             );
 
             setRecords(formattedData);
         } catch (err) {
             console.error("Ошибка загрузки:", err);
-
         }
     };
 
@@ -58,14 +76,28 @@ export const FoodScreen = () => {
         loadFoodData();
     }, []);
 
-    // При нажатии на кнопку открываем меню
-    const handleFoodClick = () => {
+    // Открытие меню для добавления
+    const handleAddClick = () => {
+        setEditingFood(null);
         setShowAddMenu(true);
     };
 
-    const handleActivityAdd = async () => {
+    // Открытие меню для редактирования
+    const handleEditClick = (record) => {
+        setEditingFood(record);
+        setShowAddMenu(true);
+    };
+
+    // Callback после успешного сохранения/обновления/удаления
+    const handleFoodSave = async () => {
         await loadFoodData();
         setShowAddMenu(false);
+        setEditingFood(null);
+    };
+
+    const handleCloseMenu = () => {
+        setShowAddMenu(false);
+        setEditingFood(null);
     };
 
     const handleClick = () => {
@@ -106,7 +138,8 @@ export const FoodScreen = () => {
                                 key={record.id}
                                 volume={record.volume}
                                 label={record.label}
-                                grams= {record.grams}
+                                grams={record.grams}
+                                onClick={() => handleEditClick(record)}
                             />
                         ))}
                     </div>
@@ -116,18 +149,18 @@ export const FoodScreen = () => {
 
 
                 <div className="overlap-wrapper">
-                    <div className="div-wrapper" onClick={handleFoodClick}>
+                    <div className="div-wrapper" onClick={handleAddClick}>
                         <div className="text-wrapper-7">+ Еда</div>
                     </div>
                 </div>
             </div>
-            {/* Условная отрисовка компонента AddWaterMenu */}
             {showAddMenu && (
                 <div className="add-food-menu-container">
-                    {/* Можно передать функцию закрытия в AddWaterMenu, чтобы он сам мог закрываться */}
                     <AddFoodMenu
-                        onClose={() => setShowAddMenu(false)}
-                        onSuccess={handleActivityAdd} // Передайте этот пропс
+                        onClose={handleCloseMenu}
+                        onSuccess={handleFoodSave}
+                        foodToEdit={editingFood}
+                        trackerId={editingFood?.trackerId}
                     />
                 </div>
             )}

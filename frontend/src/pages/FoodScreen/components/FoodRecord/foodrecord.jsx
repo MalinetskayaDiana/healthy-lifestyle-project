@@ -3,9 +3,9 @@ import line100 from "../../src/line-100.svg";
 import vector5 from "../../src/vector-5.svg";
 import "../../foodscreenstyle.css";
 
-const FoodRecord = ({ volume = "500 ккал", label = "Продукт" , grams = "100 г"}) => {
+const FoodRecord = ({ volume = "500 ккал", label = "Продукт" , grams = "100 г", onClick}) => {
   return (
-    <div className="food-record">
+      <div className="food-record" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="text-wrapper-5">{volume}</div>
       <img className="line" alt="Line" src={line100} />
       <img className="vector-2" alt="Vector" src={vector5} />

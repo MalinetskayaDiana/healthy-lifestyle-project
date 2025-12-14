@@ -459,3 +459,37 @@
   color: #401255;
   font-family: "Rubik", Helvetica, sans-serif;
 }
+
+.foodscreen .food-record {
+  transition: transform 0.1s ease, background-color 0.2s;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.foodscreen .food-record:hover {
+  background-color: rgba(40, 6, 53, 0.05);
+  transform: scale(1.02);
+}
+
+.foodscreen .food-record:active {
+  transform: scale(0.98);
+}
+
+/* Кнопка удаления в форме */
+.add-food-menu .form-actions-row .button-delete {
+  background-color: #ff4d4d; /* Красный цвет */
+  color: #ffffff;
+  border: none;
+  flex: 1;
+  border-radius: 28px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: "Rubik-Medium", Helvetica, sans-serif;
+  font-weight: 500;
+}
+
+.add-food-menu .form-actions-row .button-delete:hover {
+  background-color: #e60000;
+}

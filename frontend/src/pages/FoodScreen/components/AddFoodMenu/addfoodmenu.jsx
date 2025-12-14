@@ -1,11 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "../../foodscreenstyle.css";
 
-export const AddFoodMenu = ({ onClose }) => {
-  // Собираем данные формы в один объект состояния
+export const AddFoodMenu = ({ onClose, onSuccess, foodToEdit, trackerId }) => {
   const [formData, setFormData] = useState({
     productName: "",
-    // Значение по умолчанию: текущее время в формате, совместимом с datetime-local (YYYY-MM-DDTHH:MM)
     datetime: new Date().toISOString().slice(0, 16),
     calories: "",
     proteins: "",
@@ -15,12 +13,35 @@ export const AddFoodMenu = ({ onClose }) => {
     sugar: ""
   });
 
-  // Состояния для работы с изображением
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentTrackerId, setCurrentTrackerId] = useState(trackerId);
+
+  useEffect(() => {
+    if (foodToEdit) {
+      setIsEditMode(true);
+      setFormData({
+        productName: foodToEdit.foodName || foodToEdit.rawName || "",
+        datetime: foodToEdit.time
+            ? new Date(foodToEdit.time).toISOString().slice(0, 16)
+            : new Date().toISOString().slice(0, 16),
+        calories: foodToEdit.calories || foodToEdit.rawCalories || "",
+        proteins: foodToEdit.proteins || foodToEdit.rawProteins || "",
+        fats: foodToEdit.fats || foodToEdit.rawFats || "",
+        carbs: foodToEdit.carbs || foodToEdit.rawCarbs || "",
+        fiber: foodToEdit.fiber || foodToEdit.rawFiber || "",
+        sugar: foodToEdit.sugar || foodToEdit.rawSugar || ""
+      });
+
+      if (foodToEdit.trackerId) {
+        setCurrentTrackerId(foodToEdit.trackerId);
+      }
+    }
+  }, [foodToEdit]);
+
   const [imageLoading, setImageLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Обработка изменений в полях ввода
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -29,13 +50,10 @@ export const AddFoodMenu = ({ onClose }) => {
     }));
   };
 
-  // Функция для обработки добавления фото
   const handleAddPhoto = () => {
-    // Активируем скрытый input для выбора файла
     fileInputRef.current.click();
   };
 
-  // Обработка выбора файла
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -44,11 +62,9 @@ export const AddFoodMenu = ({ onClose }) => {
     setImageLoading(true);
 
     try {
-      // Создаем FormData для отправки изображения
       const formData = new FormData();
       formData.append("image", file);
 
-      // Отправляем изображение на сервер для анализа
       const response = await fetch("/api/food/analyze-food", {
         method: "POST",
         body: formData,
@@ -61,14 +77,11 @@ export const AddFoodMenu = ({ onClose }) => {
       const analysisResult = await response.json();
       console.log("Результат анализа:", analysisResult);
 
-      // Обновляем форму данными из анализа
       if (analysisResult.products && analysisResult.products.length > 0) {
-        // Если есть несколько продуктов, используем первый продукт
         if (analysisResult.products.length === 1) {
           const product = analysisResult.products[0];
           updateFormWithProduct(product);
         } else {
-          // Используем общие суммы для комплексного блюда
           updateFormWithTotals(analysisResult);
         }
 
@@ -84,9 +97,7 @@ export const AddFoodMenu = ({ onClose }) => {
     }
   };
 
-  // Обновление формы данными одного продукта
   const updateFormWithProduct = (product) => {
-    // Рассчитываем фактические значения на основе веса
     const ratio = product.weight / 100;
     setFormData(prev => ({
       ...prev,
@@ -99,7 +110,6 @@ export const AddFoodMenu = ({ onClose }) => {
     }));
   };
 
-  // Обновление формы общими суммами
   const updateFormWithTotals = (analysisResult) => {
     setFormData(prev => ({
       ...prev,
@@ -112,7 +122,6 @@ export const AddFoodMenu = ({ onClose }) => {
     }));
   };
 
-  // Обработчик удаления изображения
   const handleRemoveImage = () => {
     setSelectedImage(null);
     if (fileInputRef.current) {
@@ -130,17 +139,13 @@ export const AddFoodMenu = ({ onClose }) => {
 
     try {
       const userId = localStorage.getItem("userId");
-      if (!userId) throw new Error("Пользователь не авторизован");
-
-      // Преобразование даты и времени
-      const entryTime = new Date(formData.datetime).toISOString();
+      const entryDateTime = new Date(formData.datetime).toISOString();
       const trackerDate = formData.datetime.slice(0, 10);
 
-      // Формируем запись о еде
       const foodEntry = {
-        time: entryTime,
+        time: entryDateTime,
         foodName: formData.productName,
-        calories: parseFloat(formData.calories),
+        calories: parseFloat(formData.calories) || 0,
         proteins: parseFloat(formData.proteins) || 0,
         fats: parseFloat(formData.fats) || 0,
         carbs: parseFloat(formData.carbs) || 0,
@@ -148,28 +153,130 @@ export const AddFoodMenu = ({ onClose }) => {
         sugar: parseFloat(formData.sugar) || 0
       };
 
-      const foodTracker = {
-        date: trackerDate,
-        entries: [foodEntry],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      let response;
 
-      // Отправка данных
-      const response = await fetch(`/api/food?userId=${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(foodTracker),
-        credentials: "include"
-      });
+      if (isEditMode && currentTrackerId) {
+        const trackerResponse = await fetch(`/api/food/${currentTrackerId}`);
+        if (!trackerResponse.ok) {
+          throw new Error("Не удалось загрузить текущий трекер");
+        }
 
-      if (!response.ok) throw new Error("Ошибка сохранения данных");
+        const existingTracker = await trackerResponse.json();
+
+        const updatedEntries = existingTracker.entries.filter(entry =>
+            !(entry.foodName === foodToEdit.foodName &&
+                new Date(entry.time).getTime() === new Date(foodToEdit.time).getTime())
+        );
+
+        updatedEntries.push(foodEntry);
+
+        const updatedTracker = {
+          date: trackerDate,
+          entries: updatedEntries
+        };
+
+        response = await fetch(`/api/food/${currentTrackerId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedTracker),
+          credentials: "include"
+        });
+      } else {
+        const foodTracker = {
+          date: trackerDate,
+          entries: [foodEntry]
+        };
+
+        response = await fetch(`/api/food?userId=${userId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(foodTracker),
+          credentials: "include"
+        });
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ошибка сохранения данных: ${response.status} - ${errorText}`);
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      }
 
       onClose();
-      window.location.reload();
+
+      if (!onSuccess) {
+        window.location.reload();
+      }
     } catch (err) {
       console.error("Ошибка:", err);
-      alert("Не удалось сохранить запись о питании");
+      alert("Не удалось сохранить запись о питании: " + err.message);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!currentTrackerId || !foodToEdit) {
+      alert("Невозможно удалить запись: недостаточно данных");
+      return;
+    }
+
+    if (!window.confirm("Вы уверены, что хотите удалить эту запись о питании?")) {
+      return;
+    }
+
+    try {
+      const trackerResponse = await fetch(`/api/food/${currentTrackerId}`);
+      if (!trackerResponse.ok) {
+        throw new Error("Не удалось загрузить текущий трекер");
+      }
+
+      const existingTracker = await trackerResponse.json();
+
+      const updatedEntries = existingTracker.entries.filter(entry =>
+          !(entry.foodName === foodToEdit.foodName &&
+              new Date(entry.time).getTime() === new Date(foodToEdit.time).getTime())
+      );
+
+      if (updatedEntries.length === 0) {
+        const deleteResponse = await fetch(`/api/food/${currentTrackerId}`, {
+          method: "DELETE",
+          credentials: "include"
+        });
+
+        if (!deleteResponse.ok) {
+          throw new Error("Ошибка удаления трекера");
+        }
+      } else {
+        const updatedTracker = {
+          date: existingTracker.date,
+          entries: updatedEntries
+        };
+
+        const updateResponse = await fetch(`/api/food/${currentTrackerId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedTracker),
+          credentials: "include"
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error("Ошибка обновления трекера");
+        }
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      onClose();
+
+      if (!onSuccess) {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Ошибка:", err);
+      alert("Не удалось удалить запись о питании: " + err.message);
     }
   };
 
@@ -180,7 +287,6 @@ export const AddFoodMenu = ({ onClose }) => {
 
             {/* Секция для загрузки фото */}
             <div className="photo-section">
-              {/* Кнопка выбора фото */}
               <div className="button-add-photo">
                 <button
                     type="button"
@@ -217,7 +323,6 @@ export const AddFoodMenu = ({ onClose }) => {
                 </button>
               </div>
 
-              {/* Скрытый input для выбора файла */}
               <input
                   ref={fileInputRef}
                   type="file"
@@ -228,7 +333,6 @@ export const AddFoodMenu = ({ onClose }) => {
                   disabled={imageLoading}
               />
 
-              {/* Подсказка */}
               <p className="photo-hint">
                 Сфотографируйте свою еду для автоматического расчета КБЖУ
               </p>
@@ -347,8 +451,19 @@ export const AddFoodMenu = ({ onClose }) => {
               <button type="button" className="button-cancel" onClick={onClose}>
                 Отмена
               </button>
+
+              {isEditMode && (
+                  <button
+                      type="button"
+                      className="button-delete"
+                      onClick={handleDelete}
+                  >
+                    Удалить
+                  </button>
+              )}
+
               <button type="submit" className="button-save" disabled={imageLoading}>
-                {imageLoading ? "Анализ..." : "Сохранить"}
+                {imageLoading ? "Анализ..." : (isEditMode ? "Обновить" : "Сохранить")}
               </button>
             </div>
           </form>

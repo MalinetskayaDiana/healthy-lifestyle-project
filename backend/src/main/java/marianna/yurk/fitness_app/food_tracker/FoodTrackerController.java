@@ -70,7 +70,20 @@ public class FoodTrackerController {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public FoodTracker update(@PathVariable int id, @Valid @RequestBody FoodTrackerRequest request) {
-        return foodTrackerService.update(id, request);
+        try {
+            FoodTracker existingTracker = foodTrackerService.findById(id)
+                    .orElseThrow(() -> new FoodNotFoundException(id));
+
+            FoodTrackerRequest fullRequest = new FoodTrackerRequest(
+                    existingTracker.userId(),
+                    request.date(),
+                    request.entries()
+            );
+
+            return foodTrackerService.update(id, fullRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error updating food tracker", e);
+        }
     }
 
     @DeleteMapping("/{id}")
